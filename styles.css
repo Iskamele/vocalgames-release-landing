@@ -697,6 +697,103 @@ button:focus-visible,
   transition: transform 300ms ease;
 }
 
+/* ----- SUPPORT (фандрейзинг) ----- */
+.support {
+  background-color: var(--void);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.support-inner {
+  width: 100%;
+  max-width: 640px;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.support-title {
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  margin-bottom: 16px;
+  mix-blend-mode: normal;
+  text-shadow: none;
+}
+
+.support-blurb {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  color: var(--text-meta);
+  margin: 0 auto 48px;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.support-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.support-row {
+  display: grid;
+  /* link gets all the room; share button is fixed-width on the right */
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.support-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--text-main);
+  text-transform: uppercase;
+  transition: color 300ms ease;
+  text-align: left;
+}
+.support-link:hover { color: var(--text-bright); }
+
+.support-index { color: var(--text-meta); font-size: 11px; }
+.support-label { text-align: left; }
+.support-arrow {
+  color: var(--text-bright);
+  font-size: 14px;
+  transition: transform 300ms ease;
+}
+.support-link:hover .support-arrow { transform: translate(2px, -2px); }
+
+.support-share {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-meta);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color 300ms ease, color 300ms ease, background-color 300ms ease;
+  white-space: nowrap;
+}
+.support-share:hover {
+  border-color: var(--text-bright);
+  color: var(--text-bright);
+  background: rgba(255, 247, 224, 0.04);
+}
+.support-share.is-flashing {
+  border-color: var(--halo);
+  color: var(--text-bright);
+}
+
 /* ----- CONTACTS ----- */
 .contacts {
   background-color: var(--void);
@@ -861,6 +958,16 @@ button:focus-visible,
   }
 
   .contacts-inner { padding: 80px 24px 80px calc(var(--spine-w-mobile) + 16px); }
+
+  .support-inner { padding: 80px 24px 80px calc(var(--spine-w-mobile) + 16px); }
+  .support-row { gap: 8px; padding: 12px 0; }
+  .support-link { gap: 10px; font-size: 12px; letter-spacing: 0.14em; }
+  .support-label { /* allow truncation if very long on narrow screens */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .support-share { padding: 7px 10px; font-size: 9px; letter-spacing: 0.14em; }
 
   .footer {
     grid-template-columns: 1fr;

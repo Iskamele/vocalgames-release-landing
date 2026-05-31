@@ -24,7 +24,7 @@
 
     <!-- Bump ?v=N on every push that touches styles.css or main.js,
          so browsers + the GitHub Pages CDN re-fetch instead of serving stale assets. -->
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body>
     <!-- Fixed left spine: mark + vertical year + vertical brand. Also hosts the mobile menu toggle. -->
@@ -95,6 +95,21 @@
            is rendered for the hero section — the CTA *is* the indicator. -->
 
 
+      <!-- SUPPORT — per-project monobank jars + share buttons -->
+      <section class="support section" id="support" aria-label="Підтримати збір">
+        <div class="support-inner">
+          <h2 class="display-title support-title">Підтримати</h2>
+          <p class="support-blurb">Допомога зі збором на конкретну озвучку. Поширення посилання теж рахується.</p>
+          <ul class="support-list">
+            <!-- populated by JS — one row per game with jarUrl -->
+          </ul>
+        </div>
+
+        <button type="button" class="scroll-indicator" aria-label="Прокрутити далі">
+          <span class="scroll-indicator-arrow" aria-hidden="true">↓</span>
+        </button>
+      </section>
+
       <!-- CONTACTS -->
       <section class="contacts section" id="contacts" aria-label="Контакти">
         <div class="contacts-inner">
@@ -163,6 +178,6 @@
       </section>
     </template>
 
-    <script src="main.js?v=5"></script>
+    <script src="main.js?v=7"></script>
   </body>
 </html>

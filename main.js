@@ -30,6 +30,7 @@ const GAMES = [
     instructionsUrl: "#",
     detailsUrl: "#",
     watchUrl: null,
+    jarUrl: "https://send.monobank.ua/jar/4H5aTBoTGM",
   },
   {
     id: "game-2",
@@ -43,6 +44,7 @@ const GAMES = [
     instructionsUrl: "#",
     detailsUrl: "#",
     watchUrl: null,
+    jarUrl: "https://send.monobank.ua/jar/5zyzPnBtsJ",
   },
   {
     id: "game-3",
@@ -55,7 +57,8 @@ const GAMES = [
     downloadUrl: "#",
     instructionsUrl: "#",
     detailsUrl: "#",
-    watchUrl: "https://t.me/+fdpeog32s2tkYTVi", // <-- the "Дивитись зараз" target
+    watchUrl: "https://t.me/+fdpeog32s2tkYTVi",
+    jarUrl: null,                            // already released — no fundraiser
   },
   {
     id: "game-4",
@@ -69,6 +72,7 @@ const GAMES = [
     instructionsUrl: "#",
     detailsUrl: "#",
     watchUrl: null,
+    jarUrl: "https://send.monobank.ua/jar/4bJ1T46L7L",
   },
   {
     id: "game-5",
@@ -82,6 +86,7 @@ const GAMES = [
     instructionsUrl: "#",
     detailsUrl: "#",
     watchUrl: null,
+    jarUrl: "https://send.monobank.ua/jar/6rUNLEm5gS",
   },
 ];
 
@@ -185,6 +190,7 @@ function renderGames() {
 
     const dl = section.querySelector(".game-btn-download");
     const ins = section.querySelector(".game-btn-instructions");
+    const buttonsRow = section.querySelector(".game-buttons");
 
     // Wire URLs IF they're real; otherwise mark the button as a disabled placeholder.
     // (Until release assets exist, Завантажити / Інструкції are non-clickable.)
@@ -204,10 +210,26 @@ function renderGames() {
     wireOrDisable(ins, game.instructionsUrl);
 
     // "available" games (already released) — only the "Дивитись зараз" link
-    // makes sense; hide Завантажити / Інструкції entirely.
+    // in the release-text area makes sense; hide DL / Інструкції entirely.
     if (game.status === "available") {
       dl.classList.add("is-hidden");
       ins.classList.add("is-hidden");
+    }
+
+    // "tba" games (e.g. Slay the Princess) — release depends on hitting a
+    // donation goal. Replace the disabled DL/Instr pair with a single
+    // active "Підтримати збір" button that links to the project's jar.
+    if (game.status === "tba" && game.jarUrl) {
+      dl.classList.add("is-hidden");
+      ins.classList.add("is-hidden");
+      const support = document.createElement("a");
+      support.className = "btn btn--primary game-btn-support";
+      support.href = game.jarUrl;
+      support.target = "_blank";
+      support.rel = "noopener";
+      support.innerHTML = `Підтримати збір<span class="external-arrow" aria-hidden="true">↗</span>`;
+      // Insert at the START of the buttons row so it visually replaces the pair.
+      buttonsRow.prepend(support);
     }
 
     const det = section.querySelector(".game-btn-details");
@@ -245,6 +267,7 @@ function wireSoftSnap() {
   const stops = [
     document.getElementById("hero"),
     ...Array.from(document.querySelectorAll(".section.game")),
+    document.getElementById("support"),
     document.getElementById("contacts"),
   ].filter(Boolean);
 
@@ -315,6 +338,7 @@ function wireScrollIndicators() {
   const stops = [
     document.getElementById("hero"),
     ...Array.from(document.querySelectorAll(".section.game")),
+    document.getElementById("support"),
     document.getElementById("contacts"),
   ].filter(Boolean);
 
@@ -373,6 +397,12 @@ function navItems() {
     sub: shortReleaseLabel(g),
   }));
   items.push({
+    href: "#support",
+    label: "// SUPPORT",
+    title: "Підтримати",
+    sub: "Допомога зі зборами",
+  });
+  items.push({
     href: "#contacts",
     label: "// CONTACT",
     title: "Контакти",
@@ -416,6 +446,97 @@ function renderMobileMenu() {
 }
 
 /* ------------------------------------------------------------------
+   Support section — renders one row per game that has a jarUrl.
+   Each row is a link to the monobank jar + a "Поширити" button that
+   uses the Web Share API (with clipboard fallback).
+   ------------------------------------------------------------------ */
+
+function shareTextFor(game) {
+  // URL inlined in the text — some apps (Telegram channels, X, etc.) strip
+  // the separate share-url metadata; having it inside the text guarantees
+  // recipients always see the jar link.
+  return `Команда VOCAL GAMES робить українську озвучку гри ${game.title}. Підтримай збір: ${game.jarUrl}`;
+}
+
+function renderSupport() {
+  const list = document.querySelector(".support-list");
+  if (!list) return;
+  const supportable = GAMES.filter((g) => g.jarUrl);
+  list.innerHTML = supportable
+    .map((g, i) => {
+      const label = g.title.toUpperCase();
+      const text = shareTextFor(g);
+      // data-* values are HTML-escaped via attribute encoding
+      return `
+        <li class="support-row">
+          <a class="support-link" href="${g.jarUrl}" target="_blank" rel="noopener">
+            <span class="support-index">[${pad2(i + 1)}]</span>
+            <span class="support-label">${label}</span>
+            <span class="support-arrow" aria-hidden="true">↗</span>
+          </a>
+          <button
+            type="button"
+            class="support-share"
+            data-share-title="VOCAL GAMES — ${label}"
+            data-share-text="${text}"
+            data-share-url="${g.jarUrl}"
+          >Поширити</button>
+        </li>`;
+    })
+    .join("");
+}
+
+/* Web Share API + clipboard fallback. Visual feedback is a temporary text
+   swap on the button itself ("Скопійовано" / "Готово"). */
+async function shareJar(btn) {
+  const title = btn.dataset.shareTitle || "VOCAL GAMES";
+  const text  = btn.dataset.shareText  || "";
+  const url   = btn.dataset.shareUrl   || "";
+  if (!url) return;
+
+  const flash = (msg) => {
+    const orig = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add("is-flashing");
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove("is-flashing");
+    }, 1600);
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+      // share sheet handled it — no toast needed
+      return;
+    } catch (_) {
+      // user cancelled — fall through silently
+      return;
+    }
+  }
+  // Fallback: copy the message (which already contains the URL) to clipboard
+  try {
+    // If the share-text already includes the URL (shareTextFor inlines it),
+    // don't append it again.
+    const payload = text.includes(url) ? text : `${text}\n${url}`;
+    await navigator.clipboard.writeText(payload);
+    flash("Скопійовано");
+  } catch (_) {
+    // Last-ditch: just open the jar
+    window.open(url, "_blank", "noopener");
+  }
+}
+
+function wireSupportShare() {
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".support-share");
+    if (!btn) return;
+    e.preventDefault();
+    shareJar(btn);
+  });
+}
+
+/* ------------------------------------------------------------------
    IntersectionObserver — set .is-active on the right-nav item
    matching the section currently centered in the viewport.
    ------------------------------------------------------------------ */
@@ -423,6 +544,7 @@ function renderMobileMenu() {
 function wireActiveSectionObserver() {
   const sections = [
     ...document.querySelectorAll(".section.game"),
+    document.getElementById("support"),
     document.getElementById("contacts"),
   ].filter(Boolean);
 
@@ -513,12 +635,14 @@ function wireMobileMenu() {
 
 document.addEventListener("DOMContentLoaded", () => {
   renderGames();
+  renderSupport();
   renderRightNav();
   renderMobileMenu();
   wireActiveSectionObserver();
   wireSmoothScroll();
   wireMobileMenu();
   wireScrollIndicators();
+  wireSupportShare();
   wireSoftSnap();
   startCountdownTicker();
 });
