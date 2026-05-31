@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+*.iml
+
+# Claude Code local config
+.claude/
+
+# Editor temp files
+*.swp
+*.swo
+*~

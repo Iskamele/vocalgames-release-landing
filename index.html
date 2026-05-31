@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VOCAL GAMES — Українська озвучка ігор</title>
+    <meta name="description" content="VOCAL GAMES — українська фандабова озвучка ваших улюблених ігор." />
+    <!-- Keep this page out of search engines -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="googlebot" content="noindex, nofollow" />
+    <meta name="yandex" content="noindex, nofollow" />
+    <meta name="bingbot" content="noindex, nofollow" />
+
+    <link rel="icon" type="image/x-icon" href="assets/favicons/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicons/favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicons/apple-touch-icon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Fixed left spine: mark + vertical year + vertical brand. Also hosts the mobile menu toggle. -->
+    <aside class="spine" aria-label="Brand spine">
+      <div class="spine-top">
+        <a href="#top" class="mark" aria-label="VOCAL GAMES — to top">
+          <span class="mark-mono">VG</span>
+        </a>
+        <div class="spine-year" aria-hidden="true">2026</div>
+        <div class="spine-divider" aria-hidden="true"></div>
+      </div>
+      <div class="spine-bottom">
+        <button class="spine-menu-toggle" type="button" aria-label="Open section menu" aria-expanded="false" aria-controls="mobile-menu">
+          <span class="spine-menu-icon" aria-hidden="true"></span>
+        </button>
+        <div class="spine-brand" aria-hidden="true">VOCAL GAMES</div>
+      </div>
+    </aside>
+
+    <!-- Mobile slide-in menu (same content as right-nav on desktop) -->
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <div class="mobile-menu-backdrop" data-mobile-close></div>
+      <nav class="mobile-menu-panel" aria-label="Section menu">
+        <div class="mobile-menu-head">
+          <span class="mobile-menu-title">// SECTIONS</span>
+          <button class="mobile-menu-close" type="button" aria-label="Close menu" data-mobile-close>✕</button>
+        </div>
+        <ul class="mobile-menu-list">
+          <!-- populated by JS from GAMES -->
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Fixed right data-panel nav (desktop only). Populated from JS, but seeded here for no-JS readability. -->
+    <nav class="right-nav" aria-label="Section navigation">
+      <ul class="right-nav-list">
+        <!-- JS will render <li> entries from GAMES + a final Контакти entry. -->
+      </ul>
+    </nav>
+
+    <main id="top">
+      <!-- HERO -->
+      <section class="hero section" id="hero" aria-label="VOCAL GAMES">
+        <div class="top-meta">
+          <nav class="meta-nav" aria-label="External links">
+            <a class="nav-link" href="https://t.me/VocalGames" target="_blank" rel="noopener">Telegram</a>
+            <a class="nav-link" href="https://www.youtube.com/@Vop-VG" target="_blank" rel="noopener">YouTube</a>
+            <a class="nav-link" href="mailto:vocalgames.contact@gmail.com">Email</a>
+          </nav>
+          <div class="meta-coords" id="coords" aria-hidden="true"></div>
+        </div>
+
+        <div class="hero-title-group">
+          <h1 class="display-title hero-title">VOCAL GAMES</h1>
+          <p class="hero-subtitle">Українська озвучка ваших улюблених ігор.</p>
+          <a class="hero-cta" href="#game-1" data-scroll-to="#game-1">
+            <span class="hero-cta-label">Далі</span>
+            <span class="hero-cta-arrow" aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- GAMES (5 sections rendered by JS into this container) -->
+      <div id="games-root"></div>
+
+      <!-- CONTACTS -->
+      <section class="contacts section" id="contacts" aria-label="Контакти">
+        <div class="contacts-inner">
+          <h2 class="display-title contacts-title">Контакти</h2>
+          <ul class="contacts-list">
+            <li class="contacts-row">
+              <a class="contacts-link" href="https://t.me/VocalGames" target="_blank" rel="noopener">
+                <span class="contacts-index">[01]</span>
+                <span class="contacts-label">TELEGRAM</span>
+                <span class="contacts-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+            <li class="contacts-row">
+              <a class="contacts-link" href="https://www.youtube.com/@Vop-VG" target="_blank" rel="noopener">
+                <span class="contacts-index">[02]</span>
+                <span class="contacts-label">YOUTUBE</span>
+                <span class="contacts-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+            <li class="contacts-row">
+              <a class="contacts-link" href="mailto:vocalgames.contact@gmail.com">
+                <span class="contacts-index">[03]</span>
+                <span class="contacts-label">EMAIL</span>
+                <span class="contacts-arrow" aria-hidden="true">→</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="footer">
+        <div class="footer-brand">VOCAL GAMES</div>
+        <div class="footer-mid" aria-hidden="true"></div>
+        <div class="footer-copy">© 2026 Vocal Games. All rights reserved.</div>
+      </footer>
+    </main>
+
+    <!-- Game-section template, cloned per game in main.js. -->
+    <template id="tpl-game">
+      <section class="section game" data-game-id="">
+        <img class="game-art" alt="" loading="lazy" decoding="async" width="1920" height="1080" />
+        <div class="game-overlay" aria-hidden="true"></div>
+
+        <div class="top-meta game-top-meta">
+          <span class="game-index"></span>
+          <span class="game-coords" aria-hidden="true"></span>
+        </div>
+
+        <div class="game-content">
+          <div class="game-tag">[ 2026 ]</div>
+          <h2 class="display-title game-title"></h2>
+          <div class="game-release">
+            <div class="game-release-text"></div>
+          </div>
+          <div class="game-buttons">
+            <a class="btn btn--primary game-btn-download" href="#" target="_blank" rel="noopener">Завантажити</a>
+            <a class="btn btn--ghost game-btn-instructions" href="#" target="_blank" rel="noopener">Інструкції</a>
+            <a class="btn btn--ghost game-btn-details is-hidden" href="#" target="_blank" rel="noopener">Подробніше</a>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <script src="main.js"></script>
+  </body>
+</html>
