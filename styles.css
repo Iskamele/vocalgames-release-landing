@@ -35,11 +35,20 @@ html {
   scroll-behavior: smooth;
   background: var(--void);
   color-scheme: dark;
-  /* Touch default — proximity for smooth iOS Safari / Telegram in-app momentum.
-     The desktop "firm snap" feel is restored in the @media (hover:hover) block
-     near the bottom of this file. */
+  /* Touch default — proximity. Works well on Android Chrome / Firefox / etc.
+     iOS Safari has known issues with both proximity (dead zones) and mandatory
+     (kills momentum); for iOS we disable CSS snap and use JS soft-snap (see
+     `.ios-soft-snap` rule below + wireSoftSnap() in main.js).
+     Desktop-with-mouse uses firm CSS mandatory snap (@media block below). */
   scroll-snap-type: y proximity;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Class added by main.js when running on iOS (any browser, since all iOS
+   browsers are WKWebView under the hood). Disables CSS snap so the JS
+   soft-snap can take over without fighting the native WebKit scroll. */
+html.ios-soft-snap {
+  scroll-snap-type: none;
 }
 
 body {
@@ -695,6 +704,9 @@ button:focus-visible,
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Reserve room below for the 80px footer so that when scroll-snap lands
+     on #contacts, the full contacts + footer both fit in one viewport. */
+  min-height: calc(100svh - 80px);
 }
 
 .contacts-inner {

@@ -219,6 +219,104 @@ function renderGames() {
 }
 
 /* ------------------------------------------------------------------
+   iOS detection.
+   All browsers on iOS are WKWebView-based (Apple policy) — so iPhone
+   Safari, Chrome on iOS, Telegram in-app, Firefox on iOS, etc. all share
+   the same scroll behavior. We only need this one check.
+   iPadOS 13+ pretends to be macOS, hence the maxTouchPoints fallback.
+   ------------------------------------------------------------------ */
+
+const isIOS =
+  /iP(hone|ad|od)/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+if (isIOS) {
+  document.documentElement.classList.add("ios-soft-snap");
+}
+
+/* ------------------------------------------------------------------
+   Soft-snap (iOS only) — after a scroll settles, if the nearest section
+   is within ~40% of viewport height, smooth-scroll to it. Otherwise leave
+   the user alone.
+
+   Why iOS-only:
+   - Android Chrome / Firefox handle CSS `proximity` snap well, so they
+     keep the lightweight CSS behavior.
+   - iOS Safari has known issues with both `mandatory` (kills momentum) and
+     `proximity` (wide dead zone where the browser refuses to snap).
+   This runs AFTER native momentum, so it doesn't fight WebKit's scroll.
+   ------------------------------------------------------------------ */
+
+function wireSoftSnap() {
+  if (!isIOS) return;
+  if (prefersReducedMotion) return;
+
+  const stops = [
+    document.getElementById("hero"),
+    ...Array.from(document.querySelectorAll(".section.game")),
+    document.getElementById("contacts"),
+  ].filter(Boolean);
+
+  let scrollTimer = null;
+  let touching = false;
+  let lastSnapAt = 0;
+
+  const maybeSnap = () => {
+    // Don't snap during interaction or right after we just snapped
+    if (touching) return;
+    if (Date.now() - lastSnapAt < 700) return;
+    // Don't snap if mobile menu is open (page is locked anyway)
+    if (document.documentElement.classList.contains("menu-open")) return;
+
+    const vt = window.scrollY;
+    const vh = window.innerHeight;
+
+    // Find the nearest section by top edge
+    let nearest = null;
+    let bestDist = Infinity;
+    for (const s of stops) {
+      const d = Math.abs(s.offsetTop - vt);
+      if (d < bestDist) {
+        bestDist = d;
+        nearest = s;
+      }
+    }
+    if (!nearest) return;
+    // Already aligned (within 4px) — nothing to do
+    if (bestDist < 4) return;
+    // Too far from any snap point (user is intentionally between) — leave them
+    if (bestDist > vh * 0.4) return;
+
+    lastSnapAt = Date.now();
+    nearest.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const debouncedMaybeSnap = () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(maybeSnap, 140);
+  };
+
+  window.addEventListener(
+    "touchstart",
+    () => {
+      touching = true;
+      clearTimeout(scrollTimer);
+    },
+    { passive: true }
+  );
+  window.addEventListener(
+    "touchend",
+    () => {
+      touching = false;
+      // After touchend, momentum continues — let it run, then check.
+      // 140ms idle from the scroll-handler debounce will fire after momentum ends.
+    },
+    { passive: true }
+  );
+  window.addEventListener("scroll", debouncedMaybeSnap, { passive: true });
+}
+
+/* ------------------------------------------------------------------
    Scroll indicators — clicking an arrow scrolls to the next section.
    The arrow on the last visible section (game-5) scrolls to #contacts.
    ------------------------------------------------------------------ */
@@ -432,5 +530,6 @@ document.addEventListener("DOMContentLoaded", () => {
   wireSmoothScroll();
   wireMobileMenu();
   wireScrollIndicators();
+  wireSoftSnap();
   startCountdownTicker();
 });
