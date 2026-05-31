@@ -219,36 +219,27 @@ function renderGames() {
 }
 
 /* ------------------------------------------------------------------
-   iOS detection.
-   All browsers on iOS are WKWebView-based (Apple policy) — so iPhone
-   Safari, Chrome on iOS, Telegram in-app, Firefox on iOS, etc. all share
-   the same scroll behavior. We only need this one check.
-   iPadOS 13+ pretends to be macOS, hence the maxTouchPoints fallback.
+   Touch detection — phones + tablets + anything with no real cursor.
+   Desktop with a mouse falls through to CSS mandatory snap.
    ------------------------------------------------------------------ */
 
-const isIOS =
-  /iP(hone|ad|od)/.test(navigator.userAgent) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isTouch = matchMedia("(hover: none) and (pointer: coarse)").matches;
 
-if (isIOS) {
-  document.documentElement.classList.add("ios-soft-snap");
+if (isTouch) {
+  document.documentElement.classList.add("soft-snap");
 }
 
 /* ------------------------------------------------------------------
-   Soft-snap (iOS only) — after a scroll settles, if the nearest section
-   is within ~40% of viewport height, smooth-scroll to it. Otherwise leave
-   the user alone.
+   Soft-snap (any touch device) — after a scroll settles, ALWAYS smooth-
+   scroll to the nearest section. No dead zone, no threshold — wherever
+   the user lands, the page softly centers on the closest slide.
 
-   Why iOS-only:
-   - Android Chrome / Firefox handle CSS `proximity` snap well, so they
-     keep the lightweight CSS behavior.
-   - iOS Safari has known issues with both `mandatory` (kills momentum) and
-     `proximity` (wide dead zone where the browser refuses to snap).
-   This runs AFTER native momentum, so it doesn't fight WebKit's scroll.
+   Runs AFTER native momentum (debounced 140 ms past the last scroll
+   event), so it doesn't fight WebKit / Chromium's own scrolling.
    ------------------------------------------------------------------ */
 
 function wireSoftSnap() {
-  if (!isIOS) return;
+  if (!isTouch) return;
   if (prefersReducedMotion) return;
 
   const stops = [
@@ -269,7 +260,6 @@ function wireSoftSnap() {
     if (document.documentElement.classList.contains("menu-open")) return;
 
     const vt = window.scrollY;
-    const vh = window.innerHeight;
 
     // Find the nearest section by top edge
     let nearest = null;
@@ -284,9 +274,8 @@ function wireSoftSnap() {
     if (!nearest) return;
     // Already aligned (within 4px) — nothing to do
     if (bestDist < 4) return;
-    // Too far from any snap point (user is intentionally between) — leave them
-    if (bestDist > vh * 0.4) return;
 
+    // Always snap to the closest section — no dead zone.
     lastSnapAt = Date.now();
     nearest.scrollIntoView({ behavior: "smooth", block: "start" });
   };

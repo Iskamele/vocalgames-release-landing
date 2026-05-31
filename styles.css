@@ -35,19 +35,18 @@ html {
   scroll-behavior: smooth;
   background: var(--void);
   color-scheme: dark;
-  /* Touch default — proximity. Works well on Android Chrome / Firefox / etc.
-     iOS Safari has known issues with both proximity (dead zones) and mandatory
-     (kills momentum); for iOS we disable CSS snap and use JS soft-snap (see
-     `.ios-soft-snap` rule below + wireSoftSnap() in main.js).
-     Desktop-with-mouse uses firm CSS mandatory snap (@media block below). */
-  scroll-snap-type: y proximity;
+  /* No CSS snap by default. On touch devices we add `.soft-snap` from JS,
+     which keeps snap off and routes through wireSoftSnap() — that always
+     centers on the nearest section after the user stops scrolling, with
+     a smooth transition. Desktop-with-mouse restores firm CSS mandatory
+     snap in the @media block near the bottom of this file. */
+  scroll-snap-type: none;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Class added by main.js when running on iOS (any browser, since all iOS
-   browsers are WKWebView under the hood). Disables CSS snap so the JS
-   soft-snap can take over without fighting the native WebKit scroll. */
-html.ios-soft-snap {
+/* Added by main.js on any touch device. Holds CSS snap OFF so the JS
+   soft-snap can take over the centering logic. */
+html.soft-snap {
   scroll-snap-type: none;
 }
 
