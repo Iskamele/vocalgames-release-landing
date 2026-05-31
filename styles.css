@@ -35,8 +35,13 @@ html {
   scroll-behavior: smooth;
   background: var(--void);
   color-scheme: dark;
-  /* Viewport scroller — snap on the actual scroll root, not <main> */
-  scroll-snap-type: y mandatory;
+  /* Viewport scroller — snap on the actual scroll root, not <main>.
+     PROXIMITY (not mandatory) + no scroll-snap-stop:always — this is
+     what fixes the choppy scroll on iOS Safari / Telegram in-app browser.
+     mandatory + always forces a hard land at every section, which WebKit
+     handles poorly: it kills momentum and feels janky on touch. */
+  scroll-snap-type: y proximity;
+  -webkit-overflow-scrolling: touch; /* enable native momentum on older WebKit */
 }
 
 body {
@@ -84,7 +89,7 @@ button:focus-visible,
   padding-left: var(--spine-w-desktop);
   padding-right: var(--right-nav-w);
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+  /* scroll-snap-stop intentionally NOT "always" — see html.scroll-snap-type. */
   overflow: hidden;
 }
 
@@ -367,10 +372,23 @@ button:focus-visible,
   /* center between the spine and the right-nav, not viewport-center */
   left: var(--spine-w-desktop);
   right: var(--right-nav-w);
-  bottom: 18vh;
+  /* Anchored slightly higher to make room for the logo above the title */
+  bottom: 14vh;
   text-align: center;
   padding: 0 24px;
   z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-logo {
+  display: block;
+  width: clamp(120px, 16vw, 240px);
+  height: auto;
+  margin-bottom: 24px;
+  /* gentle float — paired with the .hero-cta arrow + scroll-indicators */
+  animation: floatY 4.5s ease-in-out infinite;
 }
 
 .display-title {
@@ -428,10 +446,20 @@ button:focus-visible,
 .hero-cta-arrow {
   display: inline-block;
   transition: transform 300ms ease;
+  /* gentle floating bob — pairs with the per-section scroll-indicator */
+  animation: floatY 2.4s ease-in-out infinite;
 }
 
 .hero-cta:hover .hero-cta-arrow {
+  /* on hover, override the float and pull down a touch */
+  animation: none;
   transform: translateY(4px);
+}
+
+/* Shared float keyframes — used by hero logo, hero arrow, and per-section indicators */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
 }
 
 /* ----- GAME section ----- */
@@ -602,6 +630,67 @@ button:focus-visible,
 
 .is-hidden { display: none !important; }
 
+/* Disabled placeholder buttons — visible, but non-clickable (no Download asset yet) */
+.btn.is-disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.4;
+  color: var(--text-meta);
+  border-color: var(--border);
+  background: transparent;
+}
+.btn.is-disabled:hover {
+  /* keep the dimmed look on accidental hover (e.g. with keyboard nav) */
+  border-color: var(--border);
+  color: var(--text-meta);
+  background: transparent;
+}
+
+/* ----- Per-section scroll indicator (floating ↓ arrow) ----- */
+.scroll-indicator {
+  position: absolute;
+  /* Centered between spine (left) and right-nav (right) — NOT viewport center.
+     The shift compensates for asymmetric padding. */
+  left: 50%;
+  transform: translateX(
+    calc(-50% + (var(--spine-w-desktop) - var(--right-nav-w)) / 2)
+  );
+  bottom: 24px;
+  z-index: 5;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(3, 3, 3, 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 300ms ease, background-color 300ms ease;
+}
+
+.scroll-indicator-arrow {
+  display: inline-block;
+  line-height: 1;
+  animation: floatY 2.4s ease-in-out infinite;
+}
+
+.scroll-indicator:hover {
+  border-color: var(--text-bright);
+  background: rgba(3, 3, 3, 0.7);
+}
+
+.scroll-indicator:hover .scroll-indicator-arrow {
+  animation: none;
+  transform: translateY(3px);
+  transition: transform 300ms ease;
+}
+
 /* ----- CONTACTS ----- */
 .contacts {
   background-color: var(--void);
@@ -736,6 +825,16 @@ button:focus-visible,
     right: 16px;
     bottom: 8vh;
     max-width: none;
+  }
+
+  .scroll-indicator {
+    /* On mobile the right-nav is gone, spine is narrower */
+    transform: translateX(
+      calc(-50% + (var(--spine-w-mobile)) / 2)
+    );
+    bottom: 16px;
+    width: 40px;
+    height: 40px;
   }
 
   /* Even stronger mobile bottom scrim — viewport is small, content is dense */
@@ -883,6 +982,12 @@ body.menu-open { overflow: hidden; }
    ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; scroll-snap-type: none; }
+
+  .hero-logo,
+  .hero-cta-arrow,
+  .scroll-indicator-arrow {
+    animation: none !important;
+  }
 
   *,
   *::before,

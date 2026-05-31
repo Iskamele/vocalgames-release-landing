@@ -76,6 +76,7 @@
         </div>
 
         <div class="hero-title-group">
+          <img class="hero-logo" src="assets/logo/logo.svg" alt="" aria-hidden="true" width="192" height="192" />
           <h1 class="display-title hero-title">VOCAL GAMES</h1>
           <p class="hero-subtitle">Українська озвучка ваших улюблених ігор.</p>
           <a class="hero-cta" href="#game-1" data-scroll-to="#game-1">
@@ -87,6 +88,10 @@
 
       <!-- GAMES (5 sections rendered by JS into this container) -->
       <div id="games-root"></div>
+
+      <!-- Note: the hero already has the "Далі ↓" CTA, so no extra scroll-indicator
+           is rendered for the hero section — the CTA *is* the indicator. -->
+
 
       <!-- CONTACTS -->
       <section class="contacts section" id="contacts" aria-label="Контакти">
@@ -149,6 +154,10 @@
             <a class="btn btn--ghost game-btn-details is-hidden" href="#" target="_blank" rel="noopener">Подробніше</a>
           </div>
         </div>
+
+        <button type="button" class="scroll-indicator" aria-label="Прокрутити далі">
+          <span class="scroll-indicator-arrow" aria-hidden="true">↓</span>
+        </button>
       </section>
     </template>
 

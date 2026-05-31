@@ -185,8 +185,23 @@ function renderGames() {
 
     const dl = section.querySelector(".game-btn-download");
     const ins = section.querySelector(".game-btn-instructions");
-    dl.href = game.downloadUrl || "#";
-    ins.href = game.instructionsUrl || "#";
+
+    // Wire URLs IF they're real; otherwise mark the button as a disabled placeholder.
+    // (Until release assets exist, Завантажити / Інструкції are non-clickable.)
+    const wireOrDisable = (btn, url) => {
+      if (url && url !== "#") {
+        btn.href = url;
+      } else {
+        btn.removeAttribute("href");
+        btn.removeAttribute("target");
+        btn.removeAttribute("rel");
+        btn.classList.add("is-disabled");
+        btn.setAttribute("aria-disabled", "true");
+        btn.setAttribute("tabindex", "-1");
+      }
+    };
+    wireOrDisable(dl, game.downloadUrl);
+    wireOrDisable(ins, game.instructionsUrl);
 
     // "available" games (already released) — only the "Дивитись зараз" link
     // makes sense; hide Завантажити / Інструкції entirely.
@@ -200,6 +215,34 @@ function renderGames() {
     if (DETAILS_ENABLED) det.classList.remove("is-hidden");
 
     root.appendChild(node);
+  });
+}
+
+/* ------------------------------------------------------------------
+   Scroll indicators — clicking an arrow scrolls to the next section.
+   The arrow on the last visible section (game-5) scrolls to #contacts.
+   ------------------------------------------------------------------ */
+
+function wireScrollIndicators() {
+  // The ordered list of "things to scroll between" — same order as the page.
+  const stops = [
+    document.getElementById("hero"),
+    ...Array.from(document.querySelectorAll(".section.game")),
+    document.getElementById("contacts"),
+  ].filter(Boolean);
+
+  document.querySelectorAll(".scroll-indicator").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const here = btn.closest(".section");
+      const idx = stops.indexOf(here);
+      const next = stops[idx + 1];
+      if (!next) return;
+      next.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+    });
   });
 }
 
@@ -388,5 +431,6 @@ document.addEventListener("DOMContentLoaded", () => {
   wireActiveSectionObserver();
   wireSmoothScroll();
   wireMobileMenu();
+  wireScrollIndicators();
   startCountdownTicker();
 });
