@@ -35,13 +35,11 @@ html {
   scroll-behavior: smooth;
   background: var(--void);
   color-scheme: dark;
-  /* Viewport scroller — snap on the actual scroll root, not <main>.
-     PROXIMITY (not mandatory) + no scroll-snap-stop:always — this is
-     what fixes the choppy scroll on iOS Safari / Telegram in-app browser.
-     mandatory + always forces a hard land at every section, which WebKit
-     handles poorly: it kills momentum and feels janky on touch. */
+  /* Touch default — proximity for smooth iOS Safari / Telegram in-app momentum.
+     The desktop "firm snap" feel is restored in the @media (hover:hover) block
+     near the bottom of this file. */
   scroll-snap-type: y proximity;
-  -webkit-overflow-scrolling: touch; /* enable native momentum on older WebKit */
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -976,6 +974,17 @@ button:focus-visible,
 /* Lock page scroll while the mobile menu is open */
 html.menu-open,
 body.menu-open { overflow: hidden; }
+
+/* =========================================================
+   Desktop-with-mouse — firm snap (the original feel).
+   "hover: hover" + "pointer: fine" matches a real cursor, NOT a touch device
+   that emulates hover (some hybrids); so iOS Safari / Android Chrome stay
+   on the proximity snap defined on <html>.
+   ========================================================= */
+@media (hover: hover) and (pointer: fine) {
+  html { scroll-snap-type: y mandatory; }
+  .section { scroll-snap-stop: always; }
+}
 
 /* =========================================================
    reduced-motion: kill snap, smooth scroll, transitions
