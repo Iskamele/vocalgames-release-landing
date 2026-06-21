@@ -28,6 +28,9 @@ const GAMES = [
     image: "assets/games/01-bioshock-cover.jpg",
     downloadUrl: "#",
     instructionsUrl: "#",
+    // If feedbackUrl is set, the second button shows "Відгук" pointing here
+    // instead of the (currently empty) "Інструкції" placeholder.
+    feedbackUrl: "https://docs.google.com/forms/d/e/1FAIpQLSelYHqEOB9MUDRJ5SEEkYfWLoN6sWGDi3ZLuJaV2jtt9-lE2A/viewform",
     detailsUrl: "#",
     watchUrl: null,
     jarUrl: "https://send.monobank.ua/jar/4H5aTBoTGM",
@@ -207,7 +210,24 @@ function renderGames() {
       }
     };
     wireOrDisable(dl, game.downloadUrl);
-    wireOrDisable(ins, game.instructionsUrl);
+
+    // The second slot is either "Відгук" (if game.feedbackUrl is set, e.g. BioShock)
+    // or "Інструкції" (the default placeholder). Feedback button is active +
+    // opens the form in a new tab.
+    if (game.feedbackUrl) {
+      ins.textContent = "";
+      ins.append("Відгук");
+      const arrow = document.createElement("span");
+      arrow.className = "external-arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "↗";
+      ins.append(arrow);
+      ins.href = game.feedbackUrl;
+      ins.target = "_blank";
+      ins.rel = "noopener";
+    } else {
+      wireOrDisable(ins, game.instructionsUrl);
+    }
 
     // "available" games (already released) — only the "Дивитись зараз" link
     // in the release-text area makes sense; hide DL / Інструкції entirely.
