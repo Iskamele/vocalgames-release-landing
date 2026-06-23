@@ -26,7 +26,7 @@ const GAMES = [
     releaseAt: "2026-06-30",                 // YYYY-MM-DD — drives the countdown (local time)
     releaseText: null,
     image: "assets/games/01-bioshock-cover.jpg",
-    downloadUrl: "#",
+    downloadUrl: "https://drive.google.com/file/d/14TV8YTip6F2N8MK7apjpzAhHHqbLSnQP/view?usp=drive_link",
     instructionsUrl: "#",
     // If feedbackUrl is set, the second button shows "Відгук" pointing here
     // instead of the (currently empty) "Інструкції" placeholder.
