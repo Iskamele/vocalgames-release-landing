@@ -34,6 +34,8 @@ const GAMES = [
     detailsUrl: "#",
     watchUrl: null,
     jarUrl: "https://send.monobank.ua/jar/4H5aTBoTGM",
+    // counterapi.dev slug — increments on Завантажити click, value shown below button
+    counterSlug: "skyvoice-bioshock-download-clics",
   },
   {
     id: "game-2",
@@ -378,6 +380,63 @@ function wireScrollIndicators() {
 }
 
 /* ------------------------------------------------------------------
+   Download tracking (counterapi.dev) — private, not shown on the site.
+   Stats are visible only in the counterapi.dev dashboard.
+   No auth needed for increment on this free tier — token stays out of
+   the client. Per-browser dedupe via localStorage: one increment per
+   slug per 12 hours, so refreshes / re-clicks don't inflate the number.
+   ------------------------------------------------------------------ */
+
+const COUNTER_API_BASE = "https://api.counterapi.dev/v2/iskamele";
+const DEDUPE_WINDOW_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+function dedupeKey(slug) {
+  return `vg_dl_${slug}`;
+}
+
+function recentlyCounted(slug) {
+  try {
+    const raw = localStorage.getItem(dedupeKey(slug));
+    if (!raw) return false;
+    const ts = parseInt(raw, 10);
+    if (!Number.isFinite(ts)) return false;
+    return Date.now() - ts < DEDUPE_WINDOW_MS;
+  } catch (_) {
+    // Private mode / storage disabled — fall through to "not counted"
+    return false;
+  }
+}
+
+function markCounted(slug) {
+  try {
+    localStorage.setItem(dedupeKey(slug), String(Date.now()));
+  } catch (_) { /* ignore */ }
+}
+
+function incrementCount(slug) {
+  // Fire-and-forget. keepalive lets the request survive a tab-close.
+  try {
+    fetch(`${COUNTER_API_BASE}/${slug}/up`, { method: "GET", keepalive: true });
+  } catch (_) { /* ignore */ }
+}
+
+function wireDownloadTracking() {
+  GAMES.forEach((game) => {
+    if (!game.counterSlug) return;
+    const section = document.getElementById(game.id);
+    const dl = section?.querySelector(".game-btn-download");
+    if (!dl) return;
+
+    dl.addEventListener("click", () => {
+      if (dl.classList.contains("is-disabled")) return;
+      if (recentlyCounted(game.counterSlug)) return; // within 12h dedupe window
+      markCounted(game.counterSlug);
+      incrementCount(game.counterSlug);
+    });
+  });
+}
+
+/* ------------------------------------------------------------------
    Countdown ticker — updates every second.
    Reads .game-countdown[data-target="YYYY-MM-DD"] and rewrites text.
    ------------------------------------------------------------------ */
@@ -664,5 +723,6 @@ document.addEventListener("DOMContentLoaded", () => {
   wireScrollIndicators();
   wireSupportShare();
   wireSoftSnap();
+  wireDownloadTracking();
   startCountdownTicker();
 });
