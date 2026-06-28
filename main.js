@@ -26,10 +26,11 @@ const GAMES = [
     releaseAt: "2026-06-30",                 // YYYY-MM-DD — drives the countdown (local time)
     releaseText: null,
     image: "assets/games/01-bioshock-cover.jpg",
-    downloadUrl: "https://drive.google.com/file/d/14TV8YTip6F2N8MK7apjpzAhHHqbLSnQP/view?usp=drive_link",
-    instructionsUrl: "#",
-    // If feedbackUrl is set, the second button shows "Відгук" pointing here
-    // instead of the (currently empty) "Інструкції" placeholder.
+    downloadUrl: "https://drive.google.com/drive/folders/1Q1qMbop7FKNc_JV_NQKb9Ua5aVSHXAPC?usp=sharing",
+    instructionsUrl: "https://steamcommunity.com/sharedfiles/filedetails/?id=1632538283",
+    // If feedbackUrl is set, "Відгук" is rendered into the third slot
+    // (game-btn-details) when instructionsUrl is also active; otherwise
+    // it replaces the Інструкції button. See renderGames() logic.
     feedbackUrl: "https://docs.google.com/forms/d/e/1FAIpQLSelYHqEOB9MUDRJ5SEEkYfWLoN6sWGDi3ZLuJaV2jtt9-lE2A/viewform",
     detailsUrl: "#",
     watchUrl: null,
@@ -195,6 +196,7 @@ function renderGames() {
 
     const dl = section.querySelector(".game-btn-download");
     const ins = section.querySelector(".game-btn-instructions");
+    const det = section.querySelector(".game-btn-details");
     const buttonsRow = section.querySelector(".game-buttons");
 
     // Wire URLs IF they're real; otherwise mark the button as a disabled placeholder.
@@ -213,20 +215,36 @@ function renderGames() {
     };
     wireOrDisable(dl, game.downloadUrl);
 
-    // The second slot is either "Відгук" (if game.feedbackUrl is set, e.g. BioShock)
-    // or "Інструкції" (the default placeholder). Feedback button is active +
-    // opens the form in a new tab.
-    if (game.feedbackUrl) {
-      ins.textContent = "";
-      ins.append("Відгук");
+    // Render "Відгук" into whichever slot is free.
+    // - If game has real Інструкції (instructionsUrl ≠ "#") AND feedbackUrl:
+    //     Інструкції stays in slot 2, "Відгук" goes into slot 3 (game-btn-details).
+    // - If only feedbackUrl:
+    //     "Відгук" takes slot 2 (replacing the Інструкції placeholder).
+    // - If only Інструкції: slot 2 is active "Інструкції", slot 3 hidden.
+    // - If neither: slot 2 is disabled placeholder, slot 3 hidden.
+    const renderFeedback = (btn, url) => {
+      btn.textContent = "";
+      btn.append("Відгук");
       const arrow = document.createElement("span");
       arrow.className = "external-arrow";
       arrow.setAttribute("aria-hidden", "true");
       arrow.textContent = "↗";
-      ins.append(arrow);
-      ins.href = game.feedbackUrl;
-      ins.target = "_blank";
-      ins.rel = "noopener";
+      btn.append(arrow);
+      btn.href = url;
+      btn.target = "_blank";
+      btn.rel = "noopener";
+      btn.classList.remove("is-hidden", "is-disabled");
+      btn.removeAttribute("aria-disabled");
+      btn.removeAttribute("tabindex");
+    };
+    const hasInstr = game.instructionsUrl && game.instructionsUrl !== "#";
+    const hasFeedback = !!game.feedbackUrl;
+
+    if (hasInstr) {
+      wireOrDisable(ins, game.instructionsUrl);
+      if (hasFeedback) renderFeedback(det, game.feedbackUrl);
+    } else if (hasFeedback) {
+      renderFeedback(ins, game.feedbackUrl);
     } else {
       wireOrDisable(ins, game.instructionsUrl);
     }
@@ -254,9 +272,13 @@ function renderGames() {
       buttonsRow.prepend(support);
     }
 
-    const det = section.querySelector(".game-btn-details");
-    det.href = game.detailsUrl || "#";
-    if (DETAILS_ENABLED) det.classList.remove("is-hidden");
+    // "Подробніше" slot: only meaningful when the feedback / instructions
+    // branches above didn't already repurpose this element. Skip the legacy
+    // wiring if it's already been turned into "Відгук".
+    if (det.textContent.trim() === "Подробніше") {
+      det.href = game.detailsUrl || "#";
+      if (DETAILS_ENABLED) det.classList.remove("is-hidden");
+    }
 
     root.appendChild(node);
   });
