@@ -291,9 +291,9 @@ function renderGames() {
 
 const isTouch = matchMedia("(hover: none) and (pointer: coarse)").matches;
 
-if (isTouch) {
-  document.documentElement.classList.add("soft-snap");
-}
+// NOTE: soft-snap is intentionally disabled on touch devices — it felt janky
+// on mobile, so we let the page scroll freely there. Desktop-with-mouse still
+// gets firm CSS mandatory snap via the @media block in styles.css.
 
 /* ------------------------------------------------------------------
    Soft-snap (any touch device) — after a scroll settles, ALWAYS smooth-
@@ -744,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
   wireMobileMenu();
   wireScrollIndicators();
   wireSupportShare();
-  wireSoftSnap();
+  // wireSoftSnap() intentionally not called — mobile scrolls freely now.
   wireDownloadTracking();
   startCountdownTicker();
 });
