@@ -10,7 +10,7 @@
 
 /* ------------------------------------------------------------------
    TODO for site owner — fill these before going live:
-   - Real watch URL for Warhammer:           watchUrl on game-3
+   - Real watch URL for Warhammer:           watchUrl on game-6
    - Per-game download / instructions URLs:  downloadUrl, instructionsUrl
    - Final hero sentence (optional):         index.html (.hero-subtitle)
    ------------------------------------------------------------------ */
@@ -57,17 +57,17 @@ const GAMES = [
   },
   {
     id: "game-3",
-    title: "Warhammer",                      // uk: Вархамер — already released
-    status: "available",
-    releaseDate: null,
-    releaseAt: null,
+    title: "Behind the Frame: The Finest Scenery",
+    status: "released",                      // full translation is out & downloadable
+    releaseDate: "15 вересня 2026",
+    releaseAt: "2026-09-15",
     releaseText: null,
-    image: "assets/games/03-warhammer-cover.jpg",
-    downloadUrl: "#",
-    instructionsUrl: "#",
+    image: "assets/games/06-behind-the-frame-the-finest-scenery.jpg",
+    downloadUrl: "https://github.com/Iskamele/Ukrainianizer-Behind-the-Frame-The-Finest-Scenery/releases/tag/v1.0",
+    instructionsUrl: "https://steamcommunity.com/sharedfiles/filedetails/?id=3801864198",
     detailsUrl: "#",
-    watchUrl: "https://t.me/+fdpeog32s2tkYTVi",
-    jarUrl: null,                            // already released — no fundraiser
+    watchUrl: null,
+    jarUrl: null,                            // released — no fundraiser
   },
   {
     id: "game-4",
@@ -96,6 +96,20 @@ const GAMES = [
     detailsUrl: "#",
     watchUrl: null,
     jarUrl: "https://send.monobank.ua/jar/6rUNLEm5gS",
+  },
+  {
+    id: "game-6",
+    title: "Warhammer",                      // uk: Вархамер — already released
+    status: "available",
+    releaseDate: null,
+    releaseAt: null,
+    releaseText: null,
+    image: "assets/games/03-warhammer-cover.jpg",
+    downloadUrl: "#",
+    instructionsUrl: "#",
+    detailsUrl: "#",
+    watchUrl: "https://t.me/+fdpeog32s2tkYTVi",
+    jarUrl: null,                            // already released — no fundraiser
   },
 ];
 
@@ -157,7 +171,20 @@ function buildExpiredReleaseNode(releaseDate) {
   `;
 }
 
+/* "released" status: the full translation is out and downloadable. No countdown —
+   just an "available now" label; the Завантажити / Інструкції buttons do the rest. */
+function buildReleasedNode(game) {
+  const dateLine = game.releaseDate
+    ? `<span class="game-release-date">Реліз: ${game.releaseDate}</span>`
+    : "";
+  return `
+    <span class="game-release-prompt">Повний переклад — вже доступний</span>
+    ${dateLine}
+  `;
+}
+
 function buildReleaseNode(game) {
+  if (game.status === "released") return buildReleasedNode(game);
   if (game.status === "date") {
     const target = parseDateLocal(game.releaseAt);
     const initial = formatCountdown(target);
@@ -183,6 +210,7 @@ function buildReleaseNode(game) {
 }
 
 function shortReleaseLabel(game) {
+  if (game.status === "released") return "Повний переклад · вже доступний";
   if (game.status === "date") return `Дата релізу демо ${game.releaseDate}`;
   if (game.status === "available") return "Дивитись зараз";
   return game.releaseText || "";
@@ -393,7 +421,7 @@ function wireSoftSnap() {
 
 /* ------------------------------------------------------------------
    Scroll indicators — clicking an arrow scrolls to the next section.
-   The arrow on the last visible section (game-5) scrolls to #contacts.
+   The arrow on the last game section scrolls onward to #support / #contacts.
    ------------------------------------------------------------------ */
 
 function wireScrollIndicators() {
