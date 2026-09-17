@@ -560,13 +560,30 @@ button:focus-visible,
   margin-top: 2px;
 }
 
-.game-countdown.is-expired { display: none; }
-
 .game-release-date {
   font-size: 12px;
   color: var(--text-main);
   letter-spacing: 0.05em;
 }
+
+/* Fallback link shown after a countdown deadline has passed (buildExpiredReleaseNode). */
+.game-release-status {
+  align-self: flex-start; /* border-bottom hugs the text, not the full column */
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-bright);
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--halo);
+  padding-bottom: 2px;
+  transition: border-color 300ms ease;
+}
+.game-release-status:hover { border-bottom-color: var(--text-bright); }
+.game-release-status .external-arrow {
+  display: inline-block;
+  margin-left: 8px;
+  transition: transform 300ms ease;
+}
+.game-release-status:hover .external-arrow { transform: translate(2px, -2px); }
 
 /* Status variants */
 .game[data-status="available"] .game-release-text {
@@ -892,12 +909,14 @@ button:focus-visible,
    MOBILE (≤ 1023px)
    ========================================================= */
 @media (max-width: 1023px) {
-  :root { --right-nav-w: 0px; }
+  /* Spine + section menu removed on mobile — the left rail crowded the small
+     viewport and the menu added little on a one-page landing. Collapsing
+     --spine-w-mobile to 0 reflows everything that offset from it (content keeps
+     its own +16/+24px gutters). The mobile menu is unreachable with no toggle. */
+  :root { --right-nav-w: 0px; --spine-w-mobile: 0px; }
 
-  .spine { width: var(--spine-w-mobile); padding: 20px 0; }
-  .spine-brand { display: none; }
-  .spine-divider { display: none; }
-  .spine-menu-toggle { display: inline-flex; } /* show on mobile */
+  .spine { display: none; }
+  .mobile-menu { display: none; }
 
   .right-nav { display: none; }
 

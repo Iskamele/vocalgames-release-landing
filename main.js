@@ -17,6 +17,9 @@
 
 const DETAILS_ENABLED = false; // flip to true to reveal "Подробніше" everywhere
 
+// Where users are pointed for release status once a countdown deadline passes.
+const TELEGRAM_URL = "https://t.me/VocalGames";
+
 const GAMES = [
   {
     id: "game-1",
@@ -140,17 +143,33 @@ function formatCountdown(target) {
   return `${days} ${dword} ${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;
 }
 
+/* Fallback shown when a "date" game's deadline has already passed but it hasn't
+   been flipped to "available" yet — no dead/empty countdown, just what was
+   planned plus where to check the real status. */
+function buildExpiredReleaseNode(releaseDate) {
+  const plannedLine = releaseDate
+    ? `<span class="game-release-prompt">Реліз демо було заплановано на</span>
+       <span class="game-release-date">${releaseDate}</span>`
+    : `<span class="game-release-prompt">Реліз демо було заплановано</span>`;
+  return `
+    ${plannedLine}
+    <a class="game-release-status" href="${TELEGRAM_URL}" target="_blank" rel="noopener">Статус релізу — у Telegram<span class="external-arrow" aria-hidden="true">↗</span></a>
+  `;
+}
+
 function buildReleaseNode(game) {
   if (game.status === "date") {
-    // The release area becomes a three-line block:
+    const target = parseDateLocal(game.releaseAt);
+    const initial = formatCountdown(target);
+    // Deadline already passed at load — skip the countdown, show the fallback.
+    if (!initial) return buildExpiredReleaseNode(game.releaseDate);
+    // The release area is a three-line block:
     //   До релізу демо залишилося
     //   12 днів 03:24:18           (countdown — JS ticks each second)
     //   30 червня
-    const target = parseDateLocal(game.releaseAt);
-    const initial = formatCountdown(target) || "—";
     return `
       <span class="game-release-prompt">До релізу демо залишилося</span>
-      <span class="game-countdown" data-target="${game.releaseAt || ""}">${initial}</span>
+      <span class="game-countdown" data-target="${game.releaseAt || ""}" data-date="${game.releaseDate || ""}">${initial}</span>
       <span class="game-release-date">${game.releaseDate}</span>
     `;
   }
@@ -464,21 +483,23 @@ function wireDownloadTracking() {
    ------------------------------------------------------------------ */
 
 function startCountdownTicker() {
-  const nodes = Array.from(document.querySelectorAll(".game-countdown"));
+  let nodes = Array.from(document.querySelectorAll(".game-countdown"));
   if (!nodes.length) return;
 
   const tick = () => {
-    nodes.forEach((node) => {
+    // Keep only the still-live countdowns; expired ones get swapped once.
+    nodes = nodes.filter((node) => {
       const target = parseDateLocal(node.dataset.target);
       const txt = formatCountdown(target);
       if (txt) {
         node.textContent = txt;
-      } else {
-        // Expired — clear the countdown line so the date label still reads cleanly.
-        // (Owner can then flip the game's status to "available" in GAMES.)
-        node.textContent = "";
-        node.classList.add("is-expired");
+        return true;
       }
+      // Deadline just passed with the page open — replace the whole release
+      // block with the fallback message instead of leaving a dead countdown.
+      const wrap = node.closest(".game-release-text");
+      if (wrap) wrap.innerHTML = buildExpiredReleaseNode(node.dataset.date);
+      return false;
     });
   };
 
