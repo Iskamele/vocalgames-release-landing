@@ -238,7 +238,10 @@ function renderGames() {
     img.alt = `${game.title} cover art`;
 
     section.querySelector(".game-index").textContent = `// ${pad2(i + 1)} / ${pad2(GAMES.length)}`;
-    section.querySelector(".game-title").textContent = game.title;
+    const titleEl = section.querySelector(".game-title");
+    titleEl.textContent = game.title;
+    // Long titles need the smaller ".is-long" treatment so they don't blow up.
+    if (game.title.length > 24) titleEl.classList.add("is-long");
     section.querySelector(".game-release-text").innerHTML = buildReleaseNode(game);
 
     const dl = section.querySelector(".game-btn-download");

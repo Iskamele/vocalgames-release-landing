@@ -523,6 +523,15 @@ button:focus-visible,
   margin: 0;
 }
 
+/* Long multi-word titles (e.g. "Behind the Frame: The Finest Scenery") blow up
+   at the default display size — cap them smaller and tighten the tracking so
+   they wrap to a compact block instead of filling the viewport. */
+.game-title.is-long {
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  letter-spacing: 0.12em;
+  text-indent: 0.12em;
+}
+
 .game-release {
   display: flex;
   flex-direction: column;
