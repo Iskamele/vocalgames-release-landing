@@ -25,8 +25,8 @@ const GAMES = [
     id: "game-1",
     title: "BioShock",                       // uk: Біошок
     status: "date",                          // "date" | "available" | "tba"
-    releaseDate: "30 червня",                // display label
-    releaseAt: "2026-06-30",                 // YYYY-MM-DD — drives the countdown (local time)
+    releaseDate: "14 жовтня",                // display label
+    releaseAt: "2026-10-14",                // YYYY-MM-DD — drives the countdown (local time)
     releaseText: null,
     image: "assets/games/01-bioshock-cover.jpg",
     downloadUrl: "https://drive.google.com/drive/folders/1Q1qMbop7FKNc_JV_NQKb9Ua5aVSHXAPC?usp=sharing",
@@ -45,8 +45,8 @@ const GAMES = [
     id: "game-2",
     title: "Subnautica",                     // uk: Субнаутіка
     status: "date",
-    releaseDate: "15 липня",
-    releaseAt: "2026-07-15",
+    releaseDate: "14 листопада",
+    releaseAt: "2026-11-14",
     releaseText: null,
     image: "assets/games/02-subnautica-cover.jpg",
     downloadUrl: "#",
