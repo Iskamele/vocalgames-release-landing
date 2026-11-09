@@ -1158,3 +1158,237 @@ body.menu-open { overflow: hidden; }
 
   .meta-coords { display: none; }
 }
+
+/* =========================================================
+   CYBER theme — Skyrim 2077 joke card (.game--cyber, set in decorateCyber()).
+   Everything is scoped to this one section; the rest of the page is untouched.
+   ========================================================= */
+.game--cyber {
+  --cy-yellow: #FCEE0A;
+  --cy-cyan:   #02D7F2;
+  --cy-red:    #FF003C;
+  --cy-ink:    #0A0A0F;
+  --cy-cut:    12px; /* size of the clipped corners */
+  --font-cyber: 'Orbitron', 'Montserrat', system-ui, sans-serif;
+}
+
+/* Yellow-tinted scrim instead of the warm dark one */
+.game--cyber .game-overlay {
+  background:
+    linear-gradient(180deg,
+      rgba(10, 10, 15, 0.95) 0%,
+      rgba(10, 10, 15, 0.45) 10%,
+      rgba(10, 10, 15, 0) 24%,
+      rgba(10, 10, 15, 0) 40%,
+      rgba(10, 10, 15, 0.8) 72%,
+      rgba(10, 10, 15, 0.97) 100%),
+    linear-gradient(90deg, rgba(252, 238, 10, 0.10) 0%, rgba(2, 215, 242, 0.06) 100%);
+}
+
+.cyber-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}
+/* A slow bright band sweeping down, like a CRT refresh */
+.cyber-scanlines::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18vh;
+  top: -18vh;
+  background: linear-gradient(180deg, transparent, rgba(2, 215, 242, 0.06), transparent);
+  animation: cyberSweep 6s linear infinite;
+}
+@keyframes cyberSweep {
+  to { transform: translateY(136vh); }
+}
+
+/* HUD line in the top meta */
+.game--cyber .game-top-meta .game-index,
+.game--cyber .game-coords {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--cy-cyan);
+  text-transform: uppercase;
+}
+.game--cyber .game-coords::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 8px;
+  background: var(--cy-red);
+  vertical-align: 1px;
+  animation: cyberBlink 1.2s steps(2, start) infinite;
+}
+@keyframes cyberBlink {
+  to { visibility: hidden; }
+}
+
+/* [ 2077 ] tag — yellow chip with a cut corner */
+.game--cyber .game-tag {
+  align-self: flex-start;
+  padding: 4px 14px 4px 10px;
+  background: var(--cy-yellow);
+  color: var(--cy-ink);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+/* Title — heavy slanted wordmark with an RGB-split glitch */
+.game--cyber .game-title {
+  position: relative;
+  font-family: var(--font-cyber);
+  font-weight: 900;
+  font-style: normal;
+  font-size: clamp(2.2rem, 6.5vw, 5.6rem);
+  letter-spacing: 0.04em;
+  text-indent: 0;
+  line-height: 0.95;
+  color: var(--cy-yellow);
+  mix-blend-mode: normal;
+  transform: skewX(-8deg);
+  transform-origin: left bottom;
+  text-shadow: 3px 3px 0 var(--cy-red), 0 0 28px rgba(252, 238, 10, 0.25);
+}
+.game--cyber .game-title::before,
+.game--cyber .game-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  text-shadow: none;
+}
+.game--cyber .game-title::before {
+  color: var(--cy-cyan);
+  animation: cyberGlitchA 3.2s steps(1, end) infinite;
+}
+.game--cyber .game-title::after {
+  color: var(--cy-red);
+  animation: cyberGlitchB 3.2s steps(1, end) infinite;
+}
+/* Mostly invisible; a few short bursts of shifted slices per cycle */
+@keyframes cyberGlitchA {
+  0%, 84%, 100% { clip-path: inset(100% 0 0 0); transform: none; }
+  86% { clip-path: inset(12% 0 62% 0); transform: translate(-6px, 0); }
+  89% { clip-path: inset(58% 0 18% 0); transform: translate(5px, 0); }
+  92% { clip-path: inset(32% 0 44% 0); transform: translate(-3px, 0); }
+  95% { clip-path: inset(100% 0 0 0); }
+}
+@keyframes cyberGlitchB {
+  0%, 85%, 100% { clip-path: inset(100% 0 0 0); transform: none; }
+  87% { clip-path: inset(70% 0 6% 0); transform: translate(6px, 0); }
+  90% { clip-path: inset(4% 0 80% 0); transform: translate(-5px, 0); }
+  93% { clip-path: inset(46% 0 30% 0); transform: translate(4px, 0); }
+  96% { clip-path: inset(100% 0 0 0); }
+}
+
+/* Countdown — cyan readout */
+.game--cyber .game-release-prompt { color: var(--cy-cyan); letter-spacing: 0.18em; }
+.game--cyber .game-countdown {
+  color: var(--cy-yellow);
+  text-shadow: 0 0 12px rgba(252, 238, 10, 0.35);
+}
+.game--cyber .game-release-date { color: var(--cy-cyan); }
+.game--cyber .game-release-date::before { content: "ETA // "; opacity: 0.7; }
+
+/* Buttons — yellow slab with a clipped corner; ghost = cyan outline */
+.game--cyber .btn {
+  border: 0;
+  border-radius: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cy-cut)), calc(100% - var(--cy-cut)) 100%, 0 100%);
+}
+.game--cyber .btn--primary {
+  background: var(--cy-yellow);
+  color: var(--cy-ink);
+}
+.game--cyber .btn--primary:hover { background: var(--cy-cyan); color: var(--cy-ink); }
+.game--cyber .btn--ghost {
+  background: rgba(2, 215, 242, 0.08);
+  color: var(--cy-cyan);
+  box-shadow: inset 0 0 0 1px var(--cy-cyan);
+}
+.game--cyber .btn--ghost:hover { background: rgba(2, 215, 242, 0.18); color: #fff; }
+.game--cyber .btn.is-disabled,
+.game--cyber .btn.is-disabled:hover {
+  background: rgba(252, 238, 10, 0.12);
+  color: rgba(252, 238, 10, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(252, 238, 10, 0.35);
+  opacity: 1;
+}
+
+/* Sound toggle */
+.cyber-sound {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 10px 18px 10px 14px;
+  border: 0;
+  background: rgba(255, 0, 60, 0.14);
+  box-shadow: inset 0 0 0 1px var(--cy-red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(var(--cy-cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cy-cut));
+  transition: background-color 300ms ease;
+}
+.cyber-sound:hover { background: rgba(255, 0, 60, 0.28); }
+.cyber-sound:focus-visible { outline: 2px solid var(--cy-yellow); outline-offset: 3px; }
+
+.cyber-sound-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.cyber-sound-bars i {
+  width: 3px;
+  height: 4px;
+  background: var(--cy-red);
+}
+/* Bars bounce only while music plays */
+.game--cyber.is-playing .cyber-sound-bars i { animation: cyberEq 0.9s ease-in-out infinite; }
+.game--cyber.is-playing .cyber-sound-bars i:nth-child(2) { animation-delay: -0.3s; }
+.game--cyber.is-playing .cyber-sound-bars i:nth-child(3) { animation-delay: -0.6s; }
+.game--cyber.is-playing .cyber-sound-bars i:nth-child(4) { animation-delay: -0.15s; }
+@keyframes cyberEq {
+  0%, 100% { height: 4px; }
+  50%      { height: 14px; }
+}
+
+.game--cyber .scroll-indicator {
+  border-color: var(--cy-yellow);
+  color: var(--cy-yellow);
+  border-radius: 0;
+}
+
+@media (max-width: 1023px) {
+  .game--cyber .game-title { font-size: clamp(2rem, 11vw, 3.4rem); letter-spacing: 0.02em; white-space: normal; max-width: 6.5em; }
+  .game--cyber .game-coords { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game--cyber .game-title::before,
+  .game--cyber .game-title::after,
+  .cyber-scanlines::after { display: none; }
+}

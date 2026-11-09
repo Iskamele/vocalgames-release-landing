@@ -72,11 +72,30 @@ const GAMES = [
   {
     id: "game-4",
     title: "Skyrim",                         // uk: Скайрім
+    hidden: true,                            // swapped out for the 2077 joke card below — delete this line to bring it back
     status: "date",
     releaseDate: "11.11.2026",
     releaseAt: "2026-11-11",
     releaseText: null,
     image: "assets/games/04-skyrim-cover.jpg",
+    downloadUrl: "#",
+    instructionsUrl: "#",
+    detailsUrl: "#",
+    watchUrl: null,
+    jarUrl: "https://send.monobank.ua/jar/4bJ1T46L7L",
+  },
+  {
+    // Joke announcement: Skyrim slipped, so it "ships" in 2077, cyberpunk-styled.
+    id: "game-4-2077",
+    title: "Skyrim 2077",
+    theme: "cyber",                          // .game--cyber styles + soundtrack (wireCyberMusic)
+    tag: "2077",                             // replaces the default "[ 2026 ]" tag
+    music: "assets/music/Cyberpunk 2077 - Official E3 2018 Trailer Song Spoiler.mp3",
+    status: "date",
+    releaseDate: "11.11.2077",
+    releaseAt: "2077-11-11",
+    releaseText: null,
+    image: "assets/games/04-1-skyrim-cover.jpg",
     downloadUrl: "#",
     instructionsUrl: "#",
     detailsUrl: "#",
@@ -112,6 +131,10 @@ const GAMES = [
     jarUrl: null,                            // already released — no fundraiser
   },
 ];
+
+// Everything the page actually renders — entries with hidden: true stay in
+// GAMES as config but are skipped everywhere (sections, nav, support list).
+const VISIBLE_GAMES = GAMES.filter((g) => !g.hidden);
 
 /* ------------------------------------------------------------------
    Helpers
@@ -217,6 +240,137 @@ function shortReleaseLabel(game) {
 }
 
 /* ------------------------------------------------------------------
+   Cyber theme (Skyrim 2077 joke card) — extra markup on top of the
+   shared template: glitch title, scanlines, HUD line, sound toggle.
+   ------------------------------------------------------------------ */
+
+function decorateCyber(section, game) {
+  section.classList.add("game--cyber");
+
+  const title = section.querySelector(".game-title");
+  title.dataset.text = game.title; // feeds the ::before / ::after glitch layers
+
+  const scan = document.createElement("div");
+  scan.className = "cyber-scanlines";
+  scan.setAttribute("aria-hidden", "true");
+  section.querySelector(".game-overlay").after(scan);
+
+  section.querySelector(".game-coords").textContent = "TAMRIEL // NIGHT CITY · SIGNAL OK";
+
+  if (game.music) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cyber-sound";
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = `
+      <span class="cyber-sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="cyber-sound-label">Увімкнути звук</span>`;
+    section.querySelector(".game-content").append(btn);
+  }
+}
+
+/* Soundtrack for cyber cards. Browsers only allow audio after the visitor has
+   interacted with the page (click / tap / key — scrolling doesn't count), so:
+   - already interacted → music fades in when the card is on screen, out when it leaves;
+   - not yet → the "Увімкнути звук" button starts it.
+   Turning it off with the button sticks until the visitor turns it back on. */
+function wireCyberMusic() {
+  const MAX_VOLUME = 0.6;
+
+  VISIBLE_GAMES.filter((g) => g.theme === "cyber" && g.music).forEach((game) => {
+    const section = document.getElementById(game.id);
+    const btn = section?.querySelector(".cyber-sound");
+    if (!btn) return;
+    const label = btn.querySelector(".cyber-sound-label");
+
+    const audio = new Audio();
+    audio.preload = "none"; // ~4 MB — only fetched once it actually plays
+    audio.loop = true;
+    audio.src = encodeURI(game.music);
+
+    let inView = false;
+    let mutedByUser = false;
+    let hadGesture = false;
+    let fadeTimer = null;
+
+    const hasActivation = () =>
+      navigator.userActivation ? navigator.userActivation.hasBeenActive : hadGesture;
+
+    const setUi = (on) => {
+      btn.setAttribute("aria-pressed", String(on));
+      section.classList.toggle("is-playing", on);
+      label.textContent = on ? "Вимкнути звук" : "Увімкнути звук";
+    };
+
+    // Fixed step count, so it also ends on iOS where audio.volume is read-only.
+    const fadeTo = (target, done) => {
+      clearInterval(fadeTimer);
+      const from = audio.volume;
+      const steps = 20;
+      let i = 0;
+      fadeTimer = setInterval(() => {
+        i++;
+        audio.volume = from + (target - from) * (i / steps);
+        if (i >= steps) {
+          clearInterval(fadeTimer);
+          if (done) done();
+        }
+      }, 40);
+    };
+
+    const start = () => {
+      if (audio.paused) audio.volume = 0;
+      setUi(true);
+      const p = audio.play();
+      if (p) p.catch(() => { clearInterval(fadeTimer); setUi(false); }); // autoplay refused
+      fadeTo(MAX_VOLUME);
+    };
+
+    const stop = () => {
+      setUi(false);
+      fadeTo(0, () => audio.pause());
+    };
+
+    const isOn = () => btn.getAttribute("aria-pressed") === "true";
+    const shouldAutoplay = () => inView && !mutedByUser && !document.hidden && hasActivation();
+
+    btn.addEventListener("click", () => {
+      if (isOn()) {
+        mutedByUser = true;
+        stop();
+      } else {
+        mutedByUser = false;
+        start();
+      }
+    });
+
+    // First interaction anywhere while the card is on screen also starts it
+    // (except on the toggle itself — its click handler owns that).
+    const onFirstGesture = (e) => {
+      hadGesture = true;
+      if (btn.contains(e.target)) return;
+      if (shouldAutoplay() && !isOn()) start();
+    };
+    window.addEventListener("pointerdown", onFirstGesture, { once: true, capture: true });
+    window.addEventListener("keydown", onFirstGesture, { once: true, capture: true });
+
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.intersectionRatio >= 0.5;
+        if (shouldAutoplay() && !isOn()) start();
+        else if (!inView && isOn()) stop();
+      },
+      { threshold: [0, 0.5, 1] }
+    ).observe(section);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && isOn()) stop();
+      else if (shouldAutoplay() && !isOn()) start();
+    });
+  });
+}
+
+/* ------------------------------------------------------------------
    Render game sections
    ------------------------------------------------------------------ */
 
@@ -224,7 +378,7 @@ function renderGames() {
   const tpl = document.getElementById("tpl-game");
   const root = document.getElementById("games-root");
 
-  GAMES.forEach((game, i) => {
+  VISIBLE_GAMES.forEach((game, i) => {
     const node = tpl.content.cloneNode(true);
     const section = node.querySelector(".section.game");
 
@@ -237,11 +391,13 @@ function renderGames() {
     img.src = game.image;
     img.alt = `${game.title} cover art`;
 
-    section.querySelector(".game-index").textContent = `// ${pad2(i + 1)} / ${pad2(GAMES.length)}`;
+    section.querySelector(".game-index").textContent = `// ${pad2(i + 1)} / ${pad2(VISIBLE_GAMES.length)}`;
     const titleEl = section.querySelector(".game-title");
     titleEl.textContent = game.title;
     // Long titles need the smaller ".is-long" treatment so they don't blow up.
     if (game.title.length > 24) titleEl.classList.add("is-long");
+    if (game.tag) section.querySelector(".game-tag").textContent = `[ ${game.tag} ]`;
+    if (game.theme === "cyber") decorateCyber(section, game);
     section.querySelector(".game-release-text").innerHTML = buildReleaseNode(game);
 
     const dl = section.querySelector(".game-btn-download");
@@ -493,7 +649,7 @@ function incrementCount(slug) {
 }
 
 function wireDownloadTracking() {
-  GAMES.forEach((game) => {
+  VISIBLE_GAMES.forEach((game) => {
     if (!game.counterSlug) return;
     const section = document.getElementById(game.id);
     const dl = section?.querySelector(".game-btn-download");
@@ -543,7 +699,7 @@ function startCountdownTicker() {
    ------------------------------------------------------------------ */
 
 function navItems() {
-  const items = GAMES.map((g, i) => ({
+  const items = VISIBLE_GAMES.map((g, i) => ({
     href: `#${g.id}`,
     label: `RELEASE // ${pad2(i + 1)}`,
     title: g.title,
@@ -614,7 +770,7 @@ function shareTextFor(game) {
 function renderSupport() {
   const list = document.querySelector(".support-list");
   if (!list) return;
-  const supportable = GAMES.filter((g) => g.jarUrl);
+  const supportable = VISIBLE_GAMES.filter((g) => g.jarUrl);
   list.innerHTML = supportable
     .map((g, i) => {
       const label = g.title.toUpperCase();
@@ -798,5 +954,6 @@ document.addEventListener("DOMContentLoaded", () => {
   wireSupportShare();
   // wireSoftSnap() intentionally not called — mobile scrolls freely now.
   wireDownloadTracking();
+  wireCyberMusic();
   startCountdownTicker();
 });
